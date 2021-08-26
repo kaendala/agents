@@ -28,14 +28,24 @@
       width: 100%;
       text-align: left;
     }
+    .iconinput {
+      position: relative;
+      display: flex;
+      align-items: center;
+      .fas {
+        position: absolute;
+        left: 4.4%;
+      }
+    }
     input {
       width: 100%;
       height: 46px;
-      padding: 10px;
+      padding: 1px 7% 0;
       border: 1px solid $GL300;
       box-sizing: border-box;
       border-radius: 4px;
       outline: none;
+      font-size: 18px;
     }
     .error {
       visibility: hidden;
@@ -61,8 +71,46 @@
         border: none;
         font-size: 16px;
         font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
         &:disabled {
           background-color: $GD400;
+        }
+      }
+    }
+  }
+}
+@media (max-width: 768px) {
+  .home {
+    .contentImage {
+      img {
+        width: 24%;
+        margin-top: 20.4%;
+      }
+    }
+    .title {
+      width: 82%;
+      margin: 36px auto 0;
+    }
+    .subtitle {
+      width: 82%;
+      margin: 16px auto 0;
+    }
+
+    .contentInput {
+      width: 82%;
+      .label {
+        margin-top: 32px;
+      }
+      .contentButton {
+        button {
+          width: 100%;
+          position: relative;
+          span {
+            position: absolute;
+            right: 5%;
+          }
         }
       }
     }

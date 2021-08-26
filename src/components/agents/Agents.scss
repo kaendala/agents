@@ -42,11 +42,22 @@
         }
         .react-select__control--menu-is-open {
           background-color: $W0;
+          .react-select__indicator {
+            color: $B03;
+            transform: rotate(180deg);
+          }
         }
 
         .react-select__menu {
           border-radius: 4px;
           background-color: $W0;
+          margin-top: 0;
+          .react-select__menu-list {
+            padding: 0;
+          }
+          .react-select__option {
+            padding: 20px 10px;
+          }
         }
         .react-select__option--is-selected {
           background-color: $B03;
@@ -56,25 +67,65 @@
     .cardsContainer {
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
+      gap: 0 2%;
     }
   }
   .contentButtons {
     width: 66.3%;
-    margin: 0 auto 46px;
+    margin: 30px auto 46px;
     text-align: right;
     .link {
-      background-color: transparent;
-      border: none;
-      h3 {
-        font-weight: 700;
-        color: $B03;
+      &:first-child {
+        margin-right: 26px;
       }
-      &:disabled {
-        h3 {
-          color: $GD100;
+    }
+  }
+  .link {
+    background-color: transparent;
+    border: none;
+    h3 {
+      font-weight: 700;
+      color: $B03;
+    }
+    &:disabled {
+      h3 {
+        color: $GD100;
+      }
+    }
+  }
+  .noAgents {
+    margin: 100px auto 46px;
+    width: 60%;
+  }
+}
+@media (max-width: 768px) {
+  .agents {
+    .title {
+      margin-top: 32px;
+    }
+    .subtitle {
+      margin-bottom: 24px;
+    }
+    .cards {
+      width: 82%;
+      .contentSelect {
+        .select {
+          width: 100%;
         }
       }
+      .cardsContainer {
+        margin-top: 32px;
+      }
+    }
+    .contentButtons {
+      width: 82%;
+      display: flex;
+      justify-content: space-between;
+    }
+    .noAgents {
+      margin: 100px auto 14px;
+      width: 82%;
+      font-size: 27px;
     }
   }
 }

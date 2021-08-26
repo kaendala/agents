@@ -3,10 +3,14 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Card from "../common/card/Card";
 import Select from "react-select";
+import { formatCurrency } from "../../utils/number";
+import { useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const Agents = () => {
+  const history = useHistory();
   const [filterList, setFilterList] = useState(null);
+  const [sort, setSort] = useState(null);
   const [currentList, setCurrentList] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState();
@@ -14,10 +18,10 @@ const Agents = () => {
   const inputValue = useSelector((state) => state.incomeReducer.income);
 
   const options = [
-    { value: "name-asc", label: "Name A-Z" },
-    { value: "name-des", label: "Name Z-A" },
-    { value: "income-desc", label: "Income High-Low" },
-    { value: "income-asc", label: "Income Low-High" },
+    { value: "name-asc", label: "Name (A-Z)" },
+    { value: "name-desc", label: "Name (Z-A)" },
+    { value: "income-desc", label: "Income: High first" },
+    { value: "income-asc", label: "Income: Low first" },
   ];
   useEffect(() => {
     axios.get("/assets/json/AGENTS_LIST.json").then((res) => {
@@ -40,67 +44,120 @@ const Agents = () => {
 
   useEffect(() => {
     if (filterList && filterList.length > 0) {
-      const list = filterList.filter((element, index) => {
+      let list = filterList.filter((element, index) => {
         if (index + 1 <= page * 3) {
           return element;
         } else {
           return null;
         }
       });
+      if (sort) {
+        const type = sort.split("-")[0];
+        const sortSelect = sort.split("-")[1];
+        list = list.sort((a, b) => {
+          if (sortSelect === "desc") return a[type] > b[type] ? -1 : 1;
+          else {
+            return b[type] > a[type] ? -1 : 1;
+          }
+        });
+      }
 
       setCurrentList(list);
+    } else {
+      setCurrentList(null);
     }
-    console.log(page, totalPage);
-  }, [page, filterList]);
+  }, [page, filterList, sort]);
 
   const more = () => {
-    if (page < totalPage) {
-      let pageCurrent = page + 1;
-      setPage(pageCurrent);
-    }
+    let pageCurrent = page + 1;
+    setPage(pageCurrent);
   };
   const less = () => {
-    if (page > 1) {
-      let pageCurrent = page - 1;
-      setPage(pageCurrent);
+    let pageCurrent = page - 1;
+    setPage(pageCurrent);
+  };
+
+  const removeAgent = (agent) => {
+    const id = agent.id;
+    let list = filterList.filter((element) => {
+      if (element.id !== id) {
+        return element;
+      } else {
+        return null;
+      }
+    });
+    setFilterList(list);
+    const totalPage = Math.ceil(list.length / 3);
+    setTotalPage(totalPage);
+    if (page > totalPage) {
+      setPage(totalPage);
+    }
+    saveAgent(agent);
+  };
+  const saveAgent = (agent) => {
+    const savedAgents = JSON.parse(localStorage.getItem("agents"));
+    if (savedAgents && savedAgents.length > 0) {
+      savedAgents.push(agent);
+      localStorage.setItem("agents", JSON.stringify(savedAgents));
+    } else {
+      localStorage.setItem("agents", JSON.stringify([agent]));
     }
   };
 
   return (
     <div className="agents">
-      <h1 className="title">Your matches</h1>
-      <h2 className="subtitle">
-        Your income: <strong>{inputValue}</strong>
-      </h2>
-      <div className="cards">
-        <div className="contentSelect">
-          <h4 className="label">Order agents by</h4>
-          <Select
-            options={options}
-            className="select"
-            classNamePrefix="react-select"
-          />
-        </div>
-        {currentList && currentList.length > 0 && (
-          <div className="cardsContainer">
-            {currentList.map((agent) => (
-              <Card key={agent.id} agent={agent} />
-            ))}
+      {currentList && currentList.length > 0 && (
+        <div>
+          <h1 className="title">Your matches</h1>
+          <h2 className="subtitle">
+            Your income:{" "}
+            <strong>{formatCurrency("en-US", "USD", 0, inputValue)}</strong>
+          </h2>
+          <div className="cards">
+            <div className="contentSelect">
+              <h4 className="label">Order agents by</h4>
+              <Select
+                options={options}
+                className="select"
+                classNamePrefix="react-select"
+                onChange={(e) => setSort(e.value)}
+              />
+            </div>
+            <div className="cardsContainer">
+              {currentList.map((agent) => (
+                <Card key={agent.id} agent={agent} saveAgent={removeAgent} />
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-      <div className="contentButtons">
-        <button className="link" onClick={() => less()} disabled={page === 1}>
-          <h3>Show less -</h3>
-        </button>
-        <button
-          className="link"
-          onClick={() => more()}
-          disabled={page === totalPage}
-        >
-          <h3>Show more +</h3>
-        </button>
-      </div>
+          <div className="contentButtons">
+            <button
+              className="link"
+              onClick={() => less()}
+              disabled={page === 1}
+            >
+              <h3>Show less -</h3>
+            </button>
+            <button
+              className="link"
+              onClick={() => more()}
+              disabled={page === totalPage}
+            >
+              <h3>Show more +</h3>
+            </button>
+          </div>
+        </div>
+      )}
+      {!currentList && (
+        <div>
+          <h1 className="noAgents">
+            “No available Agents based on your income. Please try a different
+            income value.”
+          </h1>
+          <button className="link" onClick={() => history.push("/")}>
+            <h3>&#8592; Go back </h3>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

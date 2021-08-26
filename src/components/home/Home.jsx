@@ -1,72 +1,62 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { element } from "prop-types";
+import "./Home.scss";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { changeIncome } from "../../redux/actions/income.action";
+import { useHistory } from "react-router-dom";
 
 const Home = () => {
-  const [list, setList] = useState();
-  const [valueInput, setValueInput] = useState();
-  const [filterList, setFilterList] = useState();
-  const [currentList, setCurrentList] = useState();
-  const [page, setPage] = useState(1);
-  const [totalPage, setTotalPage] = useState();
-  const rate = 10000;
-  useEffect(() => {
-    axios.get("/assets/AGENTS_LIST.json").then((res) => {
-      setList(res.data);
-    });
-  }, []);
+  const history = useHistory();
+  const dispach = useDispatch();
+  const [error, setError] = useState(null);
+  const [inputValue, setInputValue] = useState("");
 
-  useEffect(() => {
-    if (filterList && filterList.length > 0) {
-      const list = filterList.map((element, index) => {
-        if (index + 1 <= page * 3) {
-          return <li>{element.name}</li>;
-        }
-      });
-
-      setCurrentList(list);
-    }
-  }, [page, filterList]);
-
-  const callList = () => {
-    const listFilt = list.filter((element) => {
-      if (
-        element.income <= valueInput + rate &&
-        element.income >= valueInput - rate
-      ) {
-        return element;
-      }
-    });
-    setFilterList(listFilt);
-    setTotalPage(listFilt.length / 3);
-  };
-  const addPage = () => {
-    if (page < totalPage) {
-      let pageCurrent = page + 1;
-      setPage(pageCurrent);
-    }
-  };
-  const lessPage = () => {
-    if (page > 1) {
-      let pageCurrent = page - 1;
-      setPage(pageCurrent);
+  const inputChange = (evt) => {
+    const regex = /[0-9]*/;
+    const validValues = regex.exec(evt.target.value);
+    setInputValue(validValues[0]);
+    if (evt.target.value.length !== 5) {
+      setError(true);
+    } else {
+      setError(false);
     }
   };
   return (
-    <>
-      <input
-        maxLength={5}
-        minLength={5}
-        type="number"
-        onChange={(e) => {
-          setValueInput(parseInt(e.target.value));
-        }}
-      ></input>
-      <button onClick={callList}>Match</button>
-      <ul>{currentList}</ul>
-      <button onClick={() => addPage()}>More</button>
-      <button onClick={() => lessPage()}>less</button>
-    </>
+    <div className="home">
+      <div className="contentImage">
+        <img alt="person" src="/assets/images/Vector.png"></img>
+      </div>
+      <h1 className="title">Find the best agent for you!</h1>
+      <h3 className="subtitle">
+        Fill the information below to get your matches.
+      </h3>
+      <div id="incomeForm" className="contentInput">
+        <h4 className="label">Current income</h4>
+        <input
+          type="tel"
+          required={true}
+          id="income"
+          maxLength={5}
+          minLength={5}
+          onChange={inputChange.bind(this)}
+          autoComplete="off"
+          value={inputValue}
+        ></input>
+        <h4 className={"error" + (error ? " show" : "")}>
+          {"Must be 5 numbers"}
+        </h4>
+        <div className="contentButton">
+          <button
+            disabled={error || error === null}
+            onClick={() => {
+              dispach(changeIncome(parseInt(inputValue)));
+              history.push("/agents");
+            }}
+          >
+            Get matches
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
